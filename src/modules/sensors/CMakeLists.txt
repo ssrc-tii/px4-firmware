@@ -61,4 +61,5 @@ px4_add_module(
 		vehicle_gps_position
 		vehicle_imu
 		vehicle_magnetometer
+        KERNEL
 	)
