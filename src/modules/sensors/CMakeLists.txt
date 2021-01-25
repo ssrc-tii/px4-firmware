@@ -51,7 +51,6 @@ px4_add_module(
 		airspeed
 		conversion
 		data_validator
-		drivers__device
 		git_ecl
 		mathlib
 		sensor_calibration
