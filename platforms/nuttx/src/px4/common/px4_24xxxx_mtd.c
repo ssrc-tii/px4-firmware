@@ -270,7 +270,7 @@ void at24c_test(void)
 			}
 
 		} else if (result != 1) {
-			syslog(LOG_INFO, "unexpected %u\n", result);
+			syslog(LOG_INFO, "unexpected %d\n", (int)result);
 		}
 
 		if ((count % 100) == 0) {
