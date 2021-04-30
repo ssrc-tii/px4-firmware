@@ -112,7 +112,7 @@ static int mtd_status(void)
 						ret = instances[i].part_dev[p]->ioctl(instances[i].part_dev[p], MTDIOC_GEOMETRY, (unsigned long)((uintptr_t)&geo));
 						printf("    partition: %u:\n", p);
 						printf("     name:   %s\n", instances[i].partition_names[p]);
-						printf("     blocks: %u (%u bytes)\n", geo.neraseblocks, erasesize * geo.neraseblocks);
+						printf("     blocks: %u (%lu bytes)\n", geo.neraseblocks, erasesize * geo.neraseblocks);
 						totalnblocks += geo.neraseblocks;
 						totalpartsize += erasesize * geo.neraseblocks;
 					}
@@ -203,7 +203,7 @@ int mtd_readtest(const mtd_instance_s &instance)
 			return 1;
 		}
 
-		printf("reading %s expecting %u bytes\n", instance.partition_names[i], expected_size);
+		printf("reading %s expecting %lu bytes\n", instance.partition_names[i], expected_size);
 		int fd = open(instance.partition_names[i], O_RDONLY);
 
 		if (fd == -1) {
@@ -216,7 +216,7 @@ int mtd_readtest(const mtd_instance_s &instance)
 		}
 
 		if (count != expected_size) {
-			PX4_ERR("Failed to read partition - got %u/%u bytes", count, expected_size);
+			PX4_ERR("Failed to read partition - got %lu/%lu bytes", count, expected_size);
 			return 1;
 		}
 
@@ -248,7 +248,7 @@ int mtd_rwtest(const mtd_instance_s &instance)
 			return 1;
 		}
 
-		printf("rwtest %s testing %u bytes\n", instance.partition_names[i], expected_size);
+		printf("rwtest %s testing %lu bytes\n", instance.partition_names[i], expected_size);
 		int fd = open(instance.partition_names[i], O_RDWR);
 
 		if (fd == -1) {
@@ -288,7 +288,7 @@ int mtd_rwtest(const mtd_instance_s &instance)
 		}
 
 		if (count != expected_size) {
-			PX4_ERR("Failed to read partition - got %u/%u bytes", count, expected_size);
+			PX4_ERR("Failed to read partition - got %lu/%lu bytes", count, expected_size);
 			return 1;
 		}
 
