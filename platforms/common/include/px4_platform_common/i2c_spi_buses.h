@@ -46,6 +46,11 @@
 #include <board_config.h>
 #include <drivers/device/spi.h>
 
+// optarg may be defined by nuttx, undefine it for now
+#if defined(optarg)
+#undef optarg
+#endif
+
 enum class I2CSPIBusOption : uint8_t {
 	All = 0, ///< select all runnning instances
 	I2CInternal,

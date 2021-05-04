@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 Technology Innovation Institute. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,54 +31,37 @@
  *
  ****************************************************************************/
 #pragma once
-#include <stdint.h>
+
+
+#include "../../../microchip_common/include/px4_arch/micro_hal.h"
 
 __BEGIN_DECLS
 
-// Forward decalarations
-FAR struct i2c_master_s;
+#define PX4_SOC_ARCH_ID             PX4_SOC_ARCH_ID_MPFS250T
 
-// The data needed to interface with mtd device's
+#define PX4_NUMBER_I2C_BUSES        1 // TODO: MPFS250T_NI2C
 
-typedef struct {
-	struct mtd_dev_s *mtd_dev;
-	int              *partition_block_counts;
-	int              *partition_types;
-	const char       **partition_names;
-	struct mtd_dev_s **part_dev;
-	uint32_t         devid;
-	unsigned         n_partitions_current;
-} mtd_instance_s;
+#define GPIO_OUTPUT_SET             GPIO_OUTPUT_ONE
+#define GPIO_OUTPUT_CLEAR           GPIO_OUTPUT_ZERO
+
+#include <chip.h>
 
 /*
-  mtd operations
+ *  PX4 uses the words in bigendian order MSB to LSB
+ *   word  [0]    [1]    [2]   [3]
+ *   bits 127:96  95-64  63-32, 31-00,
  */
+#define PX4_CPU_UUID_BYTE_LENGTH                16
+#define PX4_CPU_UUID_WORD32_LENGTH              (PX4_CPU_UUID_BYTE_LENGTH/sizeof(uint32_t))
 
-/*
- * Get device an pinter to the array of mtd_instance_s of the system
- *  count - receives the number of instances pointed to by the pointer
- *  retunred.
+/* The mfguid will be an array of bytes with
+ * MSD @ index 0 - LSD @ index PX4_CPU_MFGUID_BYTE_LENGTH-1
  *
- *  returns: - A pointer to the mtd_instance_s of the system
- *            This can be  Null if there are no mtd instances.
- *
+ * It will be converted to a string with the MSD on left and LSD on the right most position.
  */
-__EXPORT mtd_instance_s *px4_mtd_get_instances(unsigned int *count);
+#define PX4_CPU_MFGUID_BYTE_LENGTH              PX4_CPU_UUID_BYTE_LENGTH
 
-/*
-  Get device complete geometry or a device
- */
-
-
-__EXPORT int  px4_mtd_get_geometry(const mtd_instance_s *instance, unsigned long *blocksize, unsigned long *erasesize,
-				   unsigned long *neraseblocks, unsigned *blkpererase, unsigned *nblocks,
-				   unsigned *partsize);
-/*
-  Get size of a parttion on an instance.
- */
-__EXPORT ssize_t px4_mtd_get_partition_size(const mtd_instance_s *instance, const char *partname);
-
-FAR struct mtd_dev_s *px4_at24c_initialize(FAR struct i2c_master_s *dev,
-		uint8_t address);
+/* Battery backed up SRAM definitions. TODO: check what memory can actually be used */
+#define PX4_BBSRAM_SIZE             2048
 
 __END_DECLS

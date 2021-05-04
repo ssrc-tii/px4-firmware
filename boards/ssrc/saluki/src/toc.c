@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2020 Technology Innovation Institute. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,55 +30,47 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
-#pragma once
-#include <stdint.h>
+#include <image_toc.h>
 
-__BEGIN_DECLS
+/* (Maximum) size of the signature */
+#define SIGNATURE_SIZE 64
 
-// Forward decalarations
-FAR struct i2c_master_s;
+/* Boot image starts at _vectors and ends at
+ * the beginning of signature
+*/
 
-// The data needed to interface with mtd device's
+extern uint64_t exception_common;
+extern const int *_boot_signature;
 
-typedef struct {
-	struct mtd_dev_s *mtd_dev;
-	int              *partition_block_counts;
-	int              *partition_types;
-	const char       **partition_names;
-	struct mtd_dev_s **part_dev;
-	uint32_t         devid;
-	unsigned         n_partitions_current;
-} mtd_instance_s;
+#define BOOT_ADDR &exception_common
+#define BOOT_END ((const void *)&_boot_signature)
 
-/*
-  mtd operations
- */
+/* Boot signature start and end are defined by the
+ * signature definition below
+*/
 
-/*
- * Get device an pinter to the array of mtd_instance_s of the system
- *  count - receives the number of instances pointed to by the pointer
- *  retunred.
- *
- *  returns: - A pointer to the mtd_instance_s of the system
- *            This can be  Null if there are no mtd instances.
- *
- */
-__EXPORT mtd_instance_s *px4_mtd_get_instances(unsigned int *count);
+#define BOOTSIG_ADDR ((const void *)&_boot_signature)
+#define BOOTSIG_END ((const void *)((const uint8_t *)BOOTSIG_ADDR+SIGNATURE_SIZE))
 
-/*
-  Get device complete geometry or a device
- */
+/* RD certifcate may follow boot signature */
 
+#define RDCT_ADDR BOOTSIG_END
+#define RDCT_END ((const void *)((const uint8_t*)BOOTSIG_END+sizeof(image_cert_t)))
 
-__EXPORT int  px4_mtd_get_geometry(const mtd_instance_s *instance, unsigned long *blocksize, unsigned long *erasesize,
-				   unsigned long *neraseblocks, unsigned *blkpererase, unsigned *nblocks,
-				   unsigned *partsize);
-/*
-  Get size of a parttion on an instance.
- */
-__EXPORT ssize_t px4_mtd_get_partition_size(const mtd_instance_s *instance, const char *partname);
+/* RD certificate signature follows the certificate */
 
-FAR struct mtd_dev_s *px4_at24c_initialize(FAR struct i2c_master_s *dev,
-		uint8_t address);
+#define RDCTSIG_ADDR RDCT_END
+#define RDCTSIG_END ((const void *)((const uint8_t*)RDCT_ADDR+SIGNATURE_SIZE))
 
-__END_DECLS
+/* The table of contents */
+
+IMAGE_MAIN_TOC(4) = {
+	{TOC_START_MAGIC, TOC_VERSION},
+	{
+		{"BOOT", BOOT_ADDR, BOOT_END, 0, 1, 0, 0, TOC_FLAG1_BOOT | TOC_FLAG1_CHECK_SIGNATURE},
+		{"SIG1", BOOTSIG_ADDR, BOOTSIG_END, 0, 0, 0, 0, 0},
+		{"RDCT", RDCT_ADDR, RDCT_END, 0, 3, 0, 0, TOC_FLAG1_RDCT | TOC_FLAG1_CHECK_SIGNATURE},
+		{"RDSG", RDCTSIG_ADDR, RDCTSIG_END, 0, 0, 0, 0, 0},
+	},
+	TOC_END_MAGIC
+};

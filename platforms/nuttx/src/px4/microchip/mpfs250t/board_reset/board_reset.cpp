@@ -1,6 +1,7 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2021 Technology Innovation Institute. All rights reserved.
+ *   Author: @author Jukka Laitinen <jukkax@ssrc.tii.ae>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,55 +31,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
-#pragma once
-#include <stdint.h>
 
-__BEGIN_DECLS
-
-// Forward decalarations
-FAR struct i2c_master_s;
-
-// The data needed to interface with mtd device's
-
-typedef struct {
-	struct mtd_dev_s *mtd_dev;
-	int              *partition_block_counts;
-	int              *partition_types;
-	const char       **partition_names;
-	struct mtd_dev_s **part_dev;
-	uint32_t         devid;
-	unsigned         n_partitions_current;
-} mtd_instance_s;
-
-/*
-  mtd operations
+/**
+ * @file board_reset.cpp
+ * Implementation of Microchip PolarFire based Board RESET API
  */
 
-/*
- * Get device an pinter to the array of mtd_instance_s of the system
- *  count - receives the number of instances pointed to by the pointer
- *  retunred.
- *
- *  returns: - A pointer to the mtd_instance_s of the system
- *            This can be  Null if there are no mtd instances.
- *
- */
-__EXPORT mtd_instance_s *px4_mtd_get_instances(unsigned int *count);
+#include <px4_platform_common/px4_config.h>
+#include <errno.h>
+#include <nuttx/board.h>
 
-/*
-  Get device complete geometry or a device
- */
+static int board_reset_enter_bootloader()
+{
+	return OK;
+}
 
+int board_reset(int status)
+{
+	if (status == 1) {
+		board_reset_enter_bootloader();
+	}
 
-__EXPORT int  px4_mtd_get_geometry(const mtd_instance_s *instance, unsigned long *blocksize, unsigned long *erasesize,
-				   unsigned long *neraseblocks, unsigned *blkpererase, unsigned *nblocks,
-				   unsigned *partsize);
-/*
-  Get size of a parttion on an instance.
- */
-__EXPORT ssize_t px4_mtd_get_partition_size(const mtd_instance_s *instance, const char *partname);
+#if defined(BOARD_HAS_ON_RESET)
+	board_on_reset(status);
+#endif
 
-FAR struct mtd_dev_s *px4_at24c_initialize(FAR struct i2c_master_s *dev,
-		uint8_t address);
-
-__END_DECLS
+//TODO	up_systemreset();
+	return 0;
+}

@@ -618,7 +618,7 @@ perf_print_latency(int fd)
 	}
 
 	// print the overflow bucket value
-	dprintf(fd, " >%4i : %i\n", latency_buckets[latency_bucket_count - 1], latency_counters[latency_bucket_count]);
+	dprintf(fd, " >%4i : %" PRIi32 "\n", latency_buckets[latency_bucket_count - 1], latency_counters[latency_bucket_count]);
 }
 
 void
