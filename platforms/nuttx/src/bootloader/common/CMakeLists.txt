@@ -34,11 +34,13 @@
 add_library(bootloader
 	bl.c
 	image_toc.c
+	crypto.c
 )
 
 target_link_libraries(bootloader
 	PRIVATE
 		arch_bootloader
+		arch_crypto
 )
 
 add_dependencies(bootloader prebuild_targets)
